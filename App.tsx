@@ -959,6 +959,7 @@ const App: React.FC = () => {
                 <span className="text-yellow-400">↩️</span> Right Click to Undo Move
             </div>
         </div>
+      </main>
 
       {/* Rules Modal (Start Screen) */}
       {showRulesModal && (
