@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GridCell, CardData, DragItem, Rank, HistoryItem, BonusScore, CardStyle, SessionStats, GameTimeStats } from './types';
-import { initializeBoard, canPlaceCard, checkWinCondition, reshuffleBoard, calculateScore, getRankValue, getLockedCards, isRowComplete } from './utils/gameRules';
+import { GridCell, CardData, DragItem, Rank, HistoryItem, CardStyle, SessionStats, GameTimeStats } from './types';
+import { initializeBoard, canPlaceCard, checkWinCondition, reshuffleBoard, calculateScore, getRankValue, getLockedCards } from './utils/gameRules';
 import { playSound, stopAllSounds } from './utils/audio';
 import { PlayingCard, CardBack } from './components/PlayingCard';
 import { Fireworks } from './components/Fireworks';
@@ -157,19 +157,19 @@ const App: React.FC = () => {
             setTimeout(() => {
                 setIsDeckWiggling(false);
                 setShowCenterDeck(false);
-                beginDeal(keepLocked);
+                beginDeal();
             }, 1000);
         }, 600); 
     } else {
         // Immediate deal if keeping locked (Reshuffle)
         playSound('shuffle');
         setTimeout(() => {
-            beginDeal(keepLocked);
+            beginDeal();
         }, 300);
     }
   };
 
-  const beginDeal = (keepLocked: boolean) => {
+  const beginDeal = () => {
     // Start fast deal/appear
     // "place the dealt cards ... quickly ... individually"
     // 30ms interval implies quick sequential dealing
@@ -852,7 +852,6 @@ const App: React.FC = () => {
                     const floatingText = floatingTexts.find(f => f.r === rowIndex && f.c === colIndex);
 
                     // End Game Animation Logic
-                    const isEndGameAnimating = endGamePhase !== 'idle' && endGamePhase !== 'finished';
                     // Flip: non-locked cards, index check. If wiggling/pause, they are all flipped.
                     const isFlippedBack = (endGamePhase === 'flipping' && !isLocked && flatIndex <= animIndex) ||
                                           (endGamePhase === 'wiggling' && !isLocked) || 
@@ -960,8 +959,6 @@ const App: React.FC = () => {
                 <span className="text-yellow-400">↩️</span> Right Click to Undo Move
             </div>
         </div>
-
-      </main>
 
       {/* Rules Modal (Start Screen) */}
       {showRulesModal && (
