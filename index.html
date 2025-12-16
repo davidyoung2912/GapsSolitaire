@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gaps Solitaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom scrollbar for the card table */
+      ::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #064e3b; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #34d399; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #10b981; 
+      }
+
+      @keyframes wiggle {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+      .animate-wiggle {
+        animation: wiggle 0.3s ease-in-out infinite;
+      }
+
+      @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.15); filter: brightness(1.2); }
+        100% { transform: scale(1); }
+      }
+      .animate-pop {
+        animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      /* 3D Flip Animation: Starts showing back (180deg) and flips to front (0deg) */
+      /* Slowed down from 0.5s to 0.65s (approx 25-30% slower) */
+      @keyframes flipIn {
+        from { transform: rotateY(180deg); }
+        to { transform: rotateY(0deg); }
+      }
+      .animate-flip-in {
+        animation: flipIn 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+
+      @keyframes flipOut {
+        from { transform: rotateY(0deg); }
+        to { transform: rotateY(180deg); }
+      }
+      .animate-flip-out {
+        animation: flipOut 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+
+      /* Appear animation for dealt cards */
+      /* Slowed down to 0.8s to create a smooth, overlapping deal effect */
+      @keyframes appear {
+        0% { opacity: 0; transform: scale(0.8) translateY(-15px) rotateY(180deg); }
+        100% { opacity: 1; transform: scale(1) translateY(0) rotateY(0deg); }
+      }
+      .animate-appear {
+        animation: appear 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-4px); }
+        40% { transform: translateX(4px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+      }
+      .animate-shake {
+        animation: shake 0.3s ease-in-out;
+      }
+
+      /* Floating Score Animation - Moves down from top 10% to bottom 10% */
+      @keyframes floatScore {
+        0% { 
+          opacity: 0; 
+          top: 10%;
+          transform: translateX(-50%) scale(0.5); 
+        }
+        15% { 
+          opacity: 1; 
+          transform: translateX(-50%) scale(1.1); 
+        }
+        100% { 
+          opacity: 0.5; /* Fade to 50% opacity */
+          top: 90%;     /* End 10% above bottom (approx) */
+          transform: translateX(-50%) scale(1); 
+        }
+      }
+      .animate-float-score {
+        animation: floatScore 1.6s ease-out forwards;
+      }
+      
+      .text-gold-shimmer {
+        background: linear-gradient(to right, #fbfbfb 0%, #ffd700 20%, #b8860b 50%, #ffd700 80%, #fbfbfb 100%);
+        background-size: 200% auto;
+        color: #000;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 2s linear infinite;
+      }
+
+      /* Brighter red shimmer for speed bonus */
+      .text-red-shimmer {
+        background: linear-gradient(to right, #ffffff 0%, #f87171 20%, #ef4444 50%, #f87171 80%, #ffffff 100%);
+        background-size: 200% auto;
+        color: #000;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 2s linear infinite;
+      }
+
+      /* White outline for text readability */
+      .text-outline-white {
+        text-shadow: 
+          -2px -2px 0 #fff,  
+           2px -2px 0 #fff,
+          -2px  2px 0 #fff,
+           2px  2px 0 #fff,
+          -2px 0 0 #fff,
+           2px 0 0 #fff,
+           0 -2px 0 #fff,
+           0 2px 0 #fff;
+      }
+
+      @keyframes shimmer {
+        to {
+          background-position: 200% center;
+        }
+      }
+
+      /* Gold Card Effect */
+      .gold-filter {
+        filter: sepia(100%) saturate(200%) hue-rotate(5deg) brightness(1.1) contrast(1.1);
+        transition: filter 1s ease;
+      }
+
+      @keyframes sparkleSweep {
+        0% { transform: translateX(-150%) rotate(45deg); opacity: 0; }
+        10% { opacity: 0.8; }
+        90% { opacity: 0.8; }
+        100% { transform: translateX(150%) rotate(45deg); opacity: 0; }
+      }
+      
+      .sparkle-overlay {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+        transform: rotate(45deg);
+        pointer-events: none;
+      }
+      
+      /* 3D Utilities */
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .preserve-3d {
+        transform-style: preserve-3d;
+      }
+      .backface-hidden {
+        backface-visibility: hidden;
+      }
+      .rotate-y-180 {
+        transform: rotateY(180deg);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-green-900 text-white overflow-hidden select-none">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

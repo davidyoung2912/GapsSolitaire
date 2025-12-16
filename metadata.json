@@ -1,0 +1,5 @@
+{
+  "name": "Gaps Solitaire",
+  "description": "A strategic card game where you arrange decks by suit and rank by moving cards into gaps.",
+  "requestFramePermissions": []
+}
